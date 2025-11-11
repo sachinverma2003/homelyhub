@@ -5,7 +5,13 @@ const propertySlice = createSlice({
     initialState:{
         properties:[],
         totalProperties:0,
-        searchParams:{},
+        searchParams:{ 
+            page: 1,  // <-- FIXED
+            guests: '',
+            city: '',
+            dateIn: '',
+            dateOut: ''
+        },
         error:null,
         loading:false
     },
@@ -19,6 +25,7 @@ const propertySlice = createSlice({
             state.loading= false;
         },
         updateSearchParams:(state,action) =>{
+            // This logic is complex but generally correct for merging search params
             state.searchParams = Object.keys(action.payload).length === 0 ?{}: {
                 ...state.searchParams,
                 ...action.payload

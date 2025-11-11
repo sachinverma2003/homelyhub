@@ -74,7 +74,7 @@ const propertySchema = new a5a['Schema']({
             }],
         'validate': {
             'validator': function (a) {
-                return a['length'] >= 0x6;
+                return a['length'] >= 0x1;
             },
             'message': 'The\x20images\x20array\x20must\x20contain\x20at\x20least\x205\x20images.'
         }
