@@ -1,13 +1,14 @@
 import axios from "axios";
 import qs from "qs";
 
-// The VITE_API_URL is the Render URL (e.g., https://homelyhub-izba.onrender.com)
-// If the variable is not set (i.e., running locally), it defaults to your local backend.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// ✅ The VITE_API_URL should point to your Render backend
+// Example: https://homelyhub-s6uq.onrender.com (not the old izba one)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const axiosInstance = axios.create({
-  // Use the dynamic URL
-  baseURL: API_BASE_URL, 
-  withCredentials: true,
+  baseURL: API_BASE_URL, // ✅ Uses environment variable dynamically
+  withCredentials: true, // ✅ Needed for cookies (JWT/session)
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
+
+console.log("🔗 API Base URL in use:", API_BASE_URL);
