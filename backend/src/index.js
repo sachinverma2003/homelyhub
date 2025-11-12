@@ -12,39 +12,53 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8081;
 
-// Allowed frontend URLs
+
+// ------------------ CORS CONFIG ------------------
+
+// Frontend URLs allowed to call the backend
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://stellar-jelly-2126bf.netlify.app",
-  "https://homelyhub-s6uq.onrender.com"
+  "http://localhost:5173",          // local frontend Vite
+  "http://localhost:5174",          // alternate vite port
+  "https://stellar-jelly-2126bf.netlify.app" // your live frontend
 ];
 
-// CORS Middleware
+// CORS middleware (supports cookies + Render)
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("❌ CORS Blocked: " + origin));
+    },
+    credentials: true, // allow cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
 app.options("*", cors());
-app.set("trust proxy", 1); // Required for cookies on Render
 
+// Required for Render for cookies to work
+app.set("trust proxy", 1);
+
+
+// ------------------ MIDDLEWARE ------------------
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
-// Connect DB
+// Connect to database
 connectDB();
 
-// Routes
+
+// ------------------ ROUTES ------------------
 app.use("/v1/rent/user", userRoutes);
 app.use("/v1/rent/listing", propertyRouter);
 app.use("/v1/rent/user/booking", bookingRouter);
 
+
+// ------------------ SERVER ------------------
 app.listen(port, () => {
   console.log(`✅ Backend running on port ${port}`);
 });
