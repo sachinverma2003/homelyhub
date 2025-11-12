@@ -1,10 +1,12 @@
-import a8a from 'express';
-import {
-    getProperties,
-    getProperty
-} from '../controllers/propertyController.js';
-const propertyRouter = a8a['Router']();
-propertyRouter['route']('/')['get'](getProperties), propertyRouter['route']('/:id')['get'](getProperty);
-export {
-    propertyRouter
-};
+import express from "express";
+import { getProperties, getProperty } from "../controllers/propertyController.js";
+
+const propertyRouter = express.Router();
+
+// Get all properties (supports page, city, guests filters)
+propertyRouter.get("/", getProperties);
+
+// Get single property by ID
+propertyRouter.get("/:id", getProperty);
+
+export { propertyRouter };
