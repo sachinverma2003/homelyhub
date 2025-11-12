@@ -13,12 +13,10 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // ------------------ ✅ CORS CONFIG ------------------
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://stellar-jelly-2126bf.netlify.app", // ✅ Netlify frontend
-  "https://homelyhub-s6uq.onrender.com"       // ✅ Backend (Render)
-];
+// Render environment variable supports multiple origins separated by commas
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : ["http://localhost:5173", "http://localhost:5174"];
 
 app.use(
   cors({
@@ -37,7 +35,7 @@ app.use(
 );
 
 app.options("*", cors());
-app.set("trust proxy", 1); // ✅ Needed for cookies in production (Render)
+app.set("trust proxy", 1); // ✅ Needed for cookies on Render
 
 // ------------------ ✅ MIDDLEWARES ------------------
 app.use(express.json({ limit: "50mb" }));
