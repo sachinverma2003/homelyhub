@@ -11,76 +11,76 @@ import toast from 'react-hot-toast'
 
 const Header = () => {
 
-    const {isAuthenticated, user} = useSelector((state)=>state.user)
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const {isAuthenticated, user} = useSelector((state)=>state.user)
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const logoutUser =() =>{
-        dispatch(logout());
-        toast.success("User has Loggedout successfully")
-        navigate("/")
-    }
+    const logoutUser =() =>{
+        dispatch(logout());
+        toast.success("User has Loggedout successfully")
+        navigate("/")
+    }
 
-    const refreshFunction =() =>{
-        dispatch(propertyAction.updateSearchParams({}));
-        dispatch(getAllProperties())
-    }
+    const refreshFunction =() =>{
+        dispatch(propertyAction.updateSearchParams({}));
+        dispatch(getAllProperties())
+    }
 
-  return (
-    <>
-    <nav className='header row sticky-top'>
-        <Link to="/">
-                <img src='/assets/logo.png' alt='logo' className='logo' onClick={refreshFunction}/>
+  return (
+    <>
+    <nav className='header row sticky-top'>
+        <Link to="/">
+                <img src='/assets/logo.png' alt='logo' className='logo' onClick={refreshFunction}/>
 
-        </Link>
-        <div className='search_filter'>
-            <Search/>
-            <Filter/>
-        </div>
+        </Link>
+        <div className='search_filter'>
+            <Search/>
+            <Filter/>
+        </div>
 
-       {!isAuthenticated && !user &&(
-        <Link to="/login">
-        <span className='material-symbols-outlined web_logo'>
-           account_circle
-        </span>
-        </Link>
-       )}
+       {!isAuthenticated && !user &&(
+        <Link to="/login">
+        <span className='material-symbols-outlined web_logo'>
+           account_circle
+        </span>
+        </Link>
+       )}
 
-       {/* --- START OF CORRECTED BLOCK --- */}
-       {isAuthenticated && user && ( 
-        <div className='dropdown'>
-            <a  /* 1. Changed to <a> tag */
-            className='web_logo dropdown-toggle' /* 2. Removed material-symbols-outlined */
-            role='button' 
-            href = "#"
-            id="dropdownMenuLink"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            >
-             {/* 3. Added clean ternary logic */}
-             {user.avatar.url ? (
-                <img src={user.avatar.url} className='user-img rounded-circle' alt='user avatar'/>
-             ) : (
-                <span className='material-symbols-outlined'>
-                  account_circle
-          _</span>
-             )}
-            </a>
+       {/* --- START OF CORRECTED BLOCK --- */}
+       {isAuthenticated && user && ( 
+        <div className='dropdown'>
+            <a  /* 1. Changed to <a> tag */
+            className='web_logo dropdown-toggle' /* 2. Removed material-symbols-outlined */
+            role='button' 
+            href = "#"
+            id="dropdownMenuLink"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            >
+             {/* 3. Added clean ternary logic */}
+             {user.avatar.url ? (
+                <img src={user.avatar.url} className='user-img rounded-circle' alt='user avatar'/>
+             ) : (
+                <span className='material-symbols-outlined'>
+                  account_circle
+          _</span>
+             )}
+            </a>
 
-            <ul className='dropdown-menu' aria-labelledby='dropdownMenuLink'>
-                <li>
-                    <Link className='dropdown-item' to='/profile'>My Account</Link>
-                </li>
-                <li>
-                    <button className='dropdown-item' type='button' onClick={logoutUser}>Logout</button>
-                </li>
-            </ul>
-        </div>)}
+            <ul className='dropdown-menu' aria-labelledby='dropdownMenuLink'>
+                <li>
+                    <Link className='dropdown-item' to='/profile'>My Account</Link>
+                </li>
+                <li>
+                    <button className='dropdown-item' type='button' onClick={logoutUser}>Logout</button>
+                </li>
+            </ul>
+        </div>)}
         {/* --- END OF CORRECTED BLOCK --- */}
-    </nav>
-      
-    </>
-  )
+    </nav>
+      
+    </>
+  )
 }
 
 export default Header

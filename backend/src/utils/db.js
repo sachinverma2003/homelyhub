@@ -1,9 +1,14 @@
-import a11a from 'mongoose';
+import mongoose from 'mongoose';
+
 const connectDB = async () => {
     try {
-        await a11a['connect'](process['env']['MONGO_URI']), console['log']('Mongodb\x20connected...');
-    } catch (a) {
-        console['error']('Mongodv\x20connection\x20failed', a), process['exit'](0x1);
+        // Make sure this matches the name in your .env file exactly!
+        const connectionInstance = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`\nMongoDB connected !! DB HOST: ${connectionInstance.connection.host}`);
+    } catch (error) {
+        console.log("MONGODB connection FAILED ", error);
+        process.exit(1);
     }
 };
+
 export default connectDB;

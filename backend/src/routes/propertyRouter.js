@@ -3,10 +3,11 @@ import { getProperties, getProperty } from "../controllers/propertyController.js
 
 const propertyRouter = express.Router();
 
-// Get all properties (supports page, city, guests filters)
+// ✅ FIX: Changed "/get-all" to "/" 
+// This makes the URL: /api/v1/rent/listing
 propertyRouter.get("/", getProperties);
 
-// Get single property by ID
+// This handles: /api/v1/rent/listing/123
 propertyRouter.get("/:id", getProperty);
 
 export { propertyRouter };

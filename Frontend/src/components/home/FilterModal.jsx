@@ -1,14 +1,38 @@
 // FilterModal.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import "../../css/FilterModal.css";
 import "react-input-range/lib/css/index.css";
 import InputRange from "react-input-range";
 
-const FilterModal = ({ onClose }) => {
-  const [priceRange, setPriceRange] = useState({ min: 600, max: 30000 });
-  const [propertyType, setPropertyType] = useState("");
-  const [roomType, setRoomType] = useState("");
-  const [amenities, setAmenities] = useState([]);
+const FilterModal = ({ selectedFilters, onFilterChange, onClose }) => {
+  const [priceRange, setPriceRange] = useState({
+    min: selectedFilters.priceRange?.min || 600,
+    max: selectedFilters.priceRange?.max || 30000,
+  });
+
+  const [propertyType, setPropertyType] = useState(
+    selectedFilters.propertyType || ""
+  );
+
+  const [roomType, setRoomType] = useState(selectedFilters.roomType || "");
+
+  const [amenities, setAmenities] = useState(selectedFilters.amenities || []);
+
+  useEffect(() => {
+    setPriceRange({
+      min: selectedFilters.priceRange?.min || 600,
+      max: selectedFilters.priceRange?.max || 30000,
+    });
+    setPropertyType(selectedFilters.propertyType || "");
+    setRoomType(selectedFilters.roomType || "");
+    setAmenities(selectedFilters.amenities || []);
+  }, [
+    selectedFilters.priceRange,
+    selectedFilters.propertyType,
+    selectedFilters.roomType,
+    selectedFilters.amenities,
+  ]);
 
   const handlePriceRangeChange = (value) => {
     setPriceRange(value);
@@ -25,12 +49,14 @@ const FilterModal = ({ onClose }) => {
   };
 
   const handleFilterChange = () => {
-    console.log("Applied Filters:", {
-      priceRange,
-      propertyType,
-      roomType,
-      amenities,
-    });
+    onFilterChange("minPrice", priceRange.min);
+    onFilterChange("maxPrice", priceRange.max);
+    onFilterChange("propertyType", propertyType);
+    onFilterChange("roomType", roomType);
+    onFilterChange(
+      "amenities",
+      amenities.map((a) => a)
+    );
   };
 
   const propertyTypeOptions = [
@@ -66,7 +92,6 @@ const FilterModal = ({ onClose }) => {
     setRoomType("");
     setAmenities([]);
   };
-
   const handleAmenitiesChange = (selectedAmenity) => {
     setAmenities((prevAmenities) =>
       prevAmenities.includes(selectedAmenity)
@@ -74,7 +99,6 @@ const FilterModal = ({ onClose }) => {
         : [...prevAmenities, selectedAmenity]
     );
   };
-
   const handlePropertyTypeChange = (selectedType) => {
     setPropertyType((prevType) =>
       prevType === selectedType ? "" : selectedType
@@ -87,8 +111,7 @@ const FilterModal = ({ onClose }) => {
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content" 
-      style={{maxHeight:"80vh", overflow:"auto"}}>
+      <div className="modal-content">
         <h4>
           Filters <hr />
         </h4>
@@ -120,7 +143,6 @@ const FilterModal = ({ onClose }) => {
               />
             </div>
           </div>
-
           <div className="filter-section">
             <label>Property Type:</label>
             <div className="icon-box">
@@ -168,6 +190,7 @@ const FilterModal = ({ onClose }) => {
                     checked={amenities.includes(option.value)}
                     onChange={() => handleAmenitiesChange(option.value)}
                   />
+
                   <span className="material-icons amenitieslabel">
                     {option.icon}
                   </span>
@@ -187,6 +210,12 @@ const FilterModal = ({ onClose }) => {
       </div>
     </div>
   );
+};
+
+FilterModal.propTypes = {
+  selectedFilters: PropTypes.object.isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default FilterModal;

@@ -1,69 +1,97 @@
-const express = require('express');
-const cors = require('cors');
+// src/index.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import connectDB from "./utils/db.js";
+
+import { router as userRoutes } from "./routes/userRoutes.js";
+import { propertyRouter } from "./routes/propertyRouter.js";
+import { bookingRouter } from "./routes/bookingRouter.js";
+
+dotenv.config();
+
 const app = express();
+const port = process.env.PORT || 8080;
 
-// CORS Configuration
-app.use(cors({
-  origin: [
-    'https://homelyhub-frontend-joyf-pnf.vercel.app',
-    'https://homelyhub-frontend-joyf-pnf.taming-sacklrwcmm2003s-projects.vercel.app',
-    'http://localhost:3000',
-    'https://homelyhub-frontend.vercel.app' // Add any other frontend domains you use
-  ],
+// -------------------- Trust proxy --------------------
+// Needed on platforms like Render/Railway so secure cookies and forwarded headers work
+app.set("trust proxy", 1);
+
+// -------------------- CORS config --------------------
+// Provide CORS_ORIGIN as comma-separated list in your environment (Railway)
+const rawOrigins = process.env.CORS_ORIGIN || "";
+const allowedOrigins = rawOrigins
+  ? rawOrigins.split(",").map((s) => s.trim()).filter(Boolean)
+  : [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3000",
+    ];
+
+// Optional: always include your backend domain (so tools/server-to-server can work)
+if (process.env.BACKEND_PUBLIC_URL) {
+  allowedOrigins.push(process.env.BACKEND_PUBLIC_URL);
+}
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow non-browser requests (Postman, server-to-server) when origin is undefined
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("CORS Blocked: Origin not allowed - " + origin));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // preflight for all routes
 
-// Import routes
-const userRoutes = require('./routes/userRoutes');
-const propertyRouter = require('./routes/propertyRouter');
-const bookingRouter = require('./routes/bookingRouter');
+// -------------------- Middleware --------------------
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(cookieParser());
 
-// Use routes
-app.use('/v1/rent/user', userRoutes);
-app.use('/v1/rent/listing', propertyRouter);
-app.use('/v1/rent/booking', bookingRouter);
-
-// Health check route
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'HomelyHub Backend is running successfully',
-    timestamp: new Date().toISOString()
+// -------------------- Database --------------------
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB connected");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message || err);
   });
+
+// -------------------- Routes --------------------
+// NOTE: your frontend may call /v1/... or /api/v1/..., so we mount both to avoid 404s.
+// If you prefer only one, remove the duplicate route.
+app.use(["/v1/rent/user", "/api/v1/rent/user"], userRoutes);
+app.use(["/v1/rent/listing", "/api/v1/rent/listing"], propertyRouter);
+app.use(["/v1/rent/user/booking", "/api/v1/rent/user/booking"], bookingRouter);
+
+// Root check route
+app.get("/", (req, res) => {
+  res.send("✅ HomelyHub backend is live and running!");
 });
 
-// Handle undefined routes
-app.all('*', (req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: `Can't find ${req.originalUrl} on this server!`
-  });
+// 404 fallback
+app.all("*", (req, res) => {
+  res.status(404).json({ status: "fail", message: "Route not found" });
 });
 
-// Global error handling middleware
+// Global error handler (simple)
 app.use((err, req, res, next) => {
-  console.error('Error Stack:', err.stack);
-  
-  res.status(err.statusCode || 500).json({
-    status: 'error',
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  console.error("Global Error:", err && err.message ? err.message : err);
+  res.status(err.status || 500).json({
+    status: "error",
+    message: err.message || "Something went wrong",
   });
 });
 
-// Server configuration
-const PORT = process.env.PORT || 8000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 HomelyHub Backend Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 CORS Enabled for frontend domains`);
+// -------------------- Start server --------------------
+app.listen(port, () => {
+  console.log(`✅ Backend running on port ${port}`);
+  console.log("Allowed CORS origins:", allowedOrigins);
 });
-
-module.exports = app;
